@@ -13,9 +13,9 @@ export default async function HomePage() {
   let errorMessage: string | null = null;
 
   try {
-    // Past 10 days covers last league-phase matchday (MD1 was 8–10 Sep);
-    // next 2 days for any imminent fixtures. ~12 API calls when cache is cold.
-    matches = await getMatchesWindow(today, 2, 10);
+    // Past 3 days + next 14 days covers MD1 (24–26 Sep) and MD2 (27–29 Sep)
+    // from mid-September, and early Oct matchdays when closer.
+    matches = await getMatchesWindow(today, 14, 3);
   } catch (err) {
     errorMessage = err instanceof Error ? err.message : "Failed to load fixtures.";
   }
@@ -68,7 +68,7 @@ export default async function HomePage() {
       {!errorMessage && matches.length === 0 && (
         <div className="empty-state">
           <strong>No Nations League matches in this window</strong>
-          Next league-phase matchday is mid-October. Check standings or results for recent scores.
+          Next league-phase matchday starts 24 September. Check standings or results once games are underway.
         </div>
       )}
 

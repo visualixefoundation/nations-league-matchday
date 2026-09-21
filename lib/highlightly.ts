@@ -144,7 +144,7 @@ export async function getMatches(date?: string): Promise<Match[]> {
 
 /**
  * Fetch matches across a date range. Each calendar day = 1 API request.
- * Cap raised so last league-phase matchday (often ~7–10 days back) still appears.
+ * Caps keep free-tier usage bounded (past ≤14, forward ≤16).
  */
 export async function getMatchesWindow(
   startDate: string,
@@ -154,7 +154,7 @@ export async function getMatchesWindow(
   if (!LEAGUE_ID) return [];
   const start = new Date(startDate + "T00:00:00.000Z");
   const back = Math.min(Math.max(pastDays, 0), 14);
-  const forward = Math.min(Math.max(days, 1), 7);
+  const forward = Math.min(Math.max(days, 1), 16);
   const offsets: number[] = [];
   for (let i = -back; i < forward; i++) offsets.push(i);
 

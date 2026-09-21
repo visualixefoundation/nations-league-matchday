@@ -14,8 +14,8 @@ export default async function ResultsPage() {
   let errorMessage: string | null = null;
 
   try {
-    // Same past window as home so MD1 FT scores appear here too
-    const window = await getMatchesWindow(today, 1, 10);
+    // Past-focused: last 14 days of finished matches (little forward look)
+    const window = await getMatchesWindow(today, 1, 14);
     finished = window
       .filter((m) => isFinished(m.state.description))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -41,7 +41,7 @@ export default async function ResultsPage() {
 
       {errorMessage && (
         <div className="empty-state">
-          <strong>Couldn't load data</strong>
+          <strong>Couldn&apos;t load data</strong>
           {errorMessage}
         </div>
       )}
