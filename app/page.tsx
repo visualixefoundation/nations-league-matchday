@@ -68,7 +68,7 @@ export default async function HomePage() {
       {!errorMessage && matches.length === 0 && (
         <div className="empty-state">
           <strong>No Nations League matches in this window</strong>
-          Next league-phase matchday is mid-October. Check standings, or SuperSport for highlights.
+          Next league-phase matchday is mid-October. Check standings or results for recent scores.
         </div>
       )}
 

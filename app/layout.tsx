@@ -16,7 +16,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Matchday — UEFA Nations League",
-  description: "Fixtures, live scores, standings and highlights for the UEFA Nations League."
+  description: "Fixtures, live scores, standings and results for the UEFA Nations League."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="site-nav">
               <a href="/">Fixtures &amp; Scores</a>
               <a href="/standings">Standings</a>
-              <a href="/results">Highlights</a>
+              <a href="/results">Results</a>
             </nav>
           </div>
         </header>
