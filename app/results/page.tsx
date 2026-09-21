@@ -10,8 +10,8 @@ import MatchRow from "@/app/components/MatchRow";
 
 export const revalidate = 21600; // 6 hours
 
-const SUPERSPORT_NL =
-  "https://beta.supersport.com/football/uefa-nations-league/video";
+const UEFA_NL =
+  "https://www.uefa.com/uefanationsleague/";
 
 function formatHighlightDate(dateIso: string) {
   return new Date(dateIso).toLocaleDateString("en-GB", {
@@ -54,25 +54,25 @@ export default async function ResultsPage() {
     <div className="page wrap">
       <div className="page__heading">
         <h1>Highlights</h1>
-        <a
-          href={SUPERSPORT_NL}
+        
+          href={UEFA_NL}
           className="external-link"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Watch on SuperSport →
+          Watch on UEFA.com →
         </a>
       </div>
 
       <p className="page__intro">
         Full-time scores below. For video highlights, open{" "}
-        <a
-          href={SUPERSPORT_NL}
+        
+          href={UEFA_NL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-link"
         >
-          SuperSport
+          UEFA.com
         </a>
         .
       </p>
@@ -127,13 +127,13 @@ export default async function ResultsPage() {
       )}
 
       <div className="supersport-cta">
-        <a
-          href={SUPERSPORT_NL}
+        
+          href={UEFA_NL}
           target="_blank"
           rel="noopener noreferrer"
           className="supersport-cta__btn"
         >
-          More Nations League highlights on SuperSport →
+          More Nations League highlights on UEFA.com →
         </a>
       </div>
     </div>
