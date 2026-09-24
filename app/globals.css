@@ -91,15 +91,32 @@ a { color: inherit; text-decoration: none; }
 }
 .supersport-cta__btn:hover { filter: brightness(1.06); }
 
-.matchday { margin-bottom: 36px; }
+.matchday {
+  margin-bottom: 56px;
+  padding-top: 8px;
+}
+.matchday + .matchday {
+  margin-top: 12px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
 .matchday__label {
-  font-family: var(--font-display); font-size: 0.85rem; letter-spacing: 0.04em;
-  color: var(--steel); border-bottom: 1px solid var(--line);
-  padding-bottom: 8px; margin-bottom: 4px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--chalk);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
 .matchday__sublabel {
-  font-size: 0.8rem; color: var(--steel); margin: 12px 0 4px;
-  font-family: var(--font-display); letter-spacing: 0.03em;
+  font-size: 0.8rem;
+  color: var(--steel);
+  margin: 20px 0 8px;
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
 }
 
 .match-row {
