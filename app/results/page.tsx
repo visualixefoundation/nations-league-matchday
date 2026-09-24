@@ -1,21 +1,22 @@
 import {
   getMatchesWindow,
   isFinished,
+  todayEAT,
   type Match
 } from "@/lib/highlightly";
 import { dayKeyEAT, formatDayLabelEAT } from "@/lib/time";
 import MatchRow from "@/app/components/MatchRow";
 
-export const revalidate = 21600; // 6 hours
+export const revalidate = 90;
 
 export default async function ResultsPage() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayEAT();
   let finished: Match[] = [];
   let errorMessage: string | null = null;
 
   try {
-    // Past-focused: last 14 days of finished matches (little forward look)
-    const window = await getMatchesWindow(today, 1, 14);
+    // Include today + a few past days so FT scores show the same evening
+    const window = await getMatchesWindow(today, 1, 5);
     finished = window
       .filter((m) => isFinished(m.state.description))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

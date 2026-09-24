@@ -1,7 +1,8 @@
 // Thin wrapper around the Highlightly Football API (UEFA Nations League).
 //
 // Free tier = 100 req/day. Public Vercel sites get crawled by bots; short ISR
-// TTLs will burn the quota even if you never open the site. Cache aggressively.
+// TTLs will burn the quota even if you never open the site. Cache aggressively
+// between matchdays; keep TTLs short on match days so scores update.
 
 const SOURCE = process.env.HIGHLIGHTLY_SOURCE === "rapidapi" ? "rapidapi" : "direct";
 const API_KEY = process.env.HIGHLIGHTLY_API_KEY;
@@ -12,10 +13,10 @@ const BASE_URL =
     ? "https://football-highlights-api.p.rapidapi.com"
     : "https://soccer.highlightly.net";
 
-// Long TTLs: between matchdays data barely changes.
-const REVALIDATE_MATCHES = 6 * 60 * 60; // 6 hours
-const REVALIDATE_MATCH = 60 * 60; // 1 hour
-const REVALIDATE_STANDINGS = 24 * 60 * 60; // 24 hours
+// Match-day friendly: scores can move every minute; free tier still limited.
+const REVALIDATE_MATCHES = 90; // 90s — live scores / FT updates
+const REVALIDATE_MATCH = 60; // 1 min — match detail
+const REVALIDATE_STANDINGS = 15 * 60; // 15 min during league phase
 const REVALIDATE_HIGHLIGHTS = 12 * 60 * 60; // 12 hours
 const REVALIDATE_TEAM = 24 * 60 * 60; // 24 hours
 
@@ -58,8 +59,6 @@ async function get<T>(
 
 // NOTE: Nations League runs on a biennial cycle (seasons 2020, 2022, 2024,
 // 2026 seen on Highlightly), not an annual Aug–Jul cycle like club football.
-// This still resolves to the right season in 2026, but will need revisiting
-// once the 2026 edition ends and the 2028 cycle hasn't started on Highlightly yet.
 function currentSeason(): number {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -75,6 +74,11 @@ export function addDaysUTC(base: Date, days: number): Date {
   const d = new Date(base);
   d.setUTCDate(d.getUTCDate() + days);
   return d;
+}
+
+/** Calendar YYYY-MM-DD in East Africa Time (site display TZ). */
+export function todayEAT(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Nairobi" });
 }
 
 type Team = {
@@ -128,14 +132,14 @@ export type Highlight = {
 
 export async function getMatches(date?: string): Promise<Match[]> {
   if (!LEAGUE_ID) return [];
-  const day = date ?? new Date().toISOString().slice(0, 10);
+  const day = date ?? todayEAT();
   const data = await get<{ data?: Match[] } | Match[]>(
     "/matches",
     {
       leagueId: LEAGUE_ID,
       date: day,
       season: currentSeason(),
-      timezone: "Etc/UTC"
+      timezone: "Africa/Nairobi"
     },
     REVALIDATE_MATCHES
   );
@@ -144,24 +148,30 @@ export async function getMatches(date?: string): Promise<Match[]> {
 
 /**
  * Fetch matches across a date range. Each calendar day = 1 API request.
- * Caps keep free-tier usage bounded (past ≤14, forward ≤16).
+ * Keep the span tight — free tier is 100 req/day.
  */
 export async function getMatchesWindow(
   startDate: string,
   days = 3,
-  pastDays = 10
+  pastDays = 2
 ): Promise<Match[]> {
   if (!LEAGUE_ID) return [];
   const start = new Date(startDate + "T00:00:00.000Z");
-  const back = Math.min(Math.max(pastDays, 0), 14);
-  const forward = Math.min(Math.max(days, 1), 16);
+  const back = Math.min(Math.max(pastDays, 0), 7);
+  const forward = Math.min(Math.max(days, 1), 8);
   const offsets: number[] = [];
   for (let i = -back; i < forward; i++) offsets.push(i);
 
   const results = await Promise.all(
-    offsets.map((i) =>
-      getMatches(isoDateUTC(addDaysUTC(start, i))).catch(() => [] as Match[])
-    )
+    offsets.map(async (i) => {
+      try {
+        return await getMatches(isoDateUTC(addDaysUTC(start, i)));
+      } catch {
+        // Don't poison the page with a hard fail if one day 429s;
+        // other days can still render.
+        return [] as Match[];
+      }
+    })
   );
   const byId = new Map<number, Match>();
   for (const batch of results) {

@@ -1,21 +1,22 @@
-import { getMatchesWindow, type Match } from "@/lib/highlightly";
+import { getMatchesWindow, todayEAT, type Match } from "@/lib/highlightly";
 import { dayKeyEAT, formatDayLabelEAT } from "@/lib/time";
 import RefreshButton from "./components/RefreshButton";
 import KickoffCountdown from "./components/KickoffCountdown";
 import MatchRow from "./components/MatchRow";
 
-// Long ISR — bots/crawlers must not re-hit Highlightly every few minutes
-export const revalidate = 21600; // 6 hours
+// Short so live scores and FT results appear on match nights
+export const revalidate = 90;
 
 export default async function HomePage() {
-  const today = new Date().toISOString().slice(0, 10);
+  // Use EAT calendar day so "today" matches what fans in East Africa see
+  const today = todayEAT();
   let matches: Match[] = [];
   let errorMessage: string | null = null;
 
   try {
-    // Past 3 days + next 14 days covers MD1 (24–26 Sep) and MD2 (27–29 Sep)
-    // from mid-September, and early Oct matchdays when closer.
-    matches = await getMatchesWindow(today, 14, 3);
+    // Tight window: past 2 + next 6 days ≈ 8 API calls (free tier friendly).
+    // Covers MD1–MD2 cluster without burning the daily quota.
+    matches = await getMatchesWindow(today, 6, 2);
   } catch (err) {
     errorMessage = err instanceof Error ? err.message : "Failed to load fixtures.";
   }
@@ -27,7 +28,6 @@ export default async function HomePage() {
     return acc;
   }, {});
 
-  // Chronological: Tue → Wed → Thu
   const dayKeys = Object.keys(byDay).sort();
 
   const nextMatch = matches
@@ -68,7 +68,7 @@ export default async function HomePage() {
       {!errorMessage && matches.length === 0 && (
         <div className="empty-state">
           <strong>No Nations League matches in this window</strong>
-          Next league-phase matchday starts 24 September. Check standings or results once games are underway.
+          Check back around matchdays, or open Results after full-time.
         </div>
       )}
 

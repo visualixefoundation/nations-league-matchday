@@ -1,6 +1,6 @@
 import { getStandings, sortStandings, type StandingRow } from "@/lib/highlightly";
 
-export const revalidate = 86400; // 24 hours
+export const revalidate = 900; // 15 minutes during league phase
 
 function gd(row: StandingRow) {
   return row.total.scoredGoals - row.total.receivedGoals;
