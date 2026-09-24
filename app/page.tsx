@@ -73,26 +73,15 @@ export default async function HomePage() {
       )}
 
       {dayKeys.map((day) => {
-        const dayMatches = byDay[day];
-        const byRound = dayMatches.reduce<Record<string, Match[]>>((acc, m) => {
-          const round = m.round ?? "Matchday";
-          acc[round] = acc[round] ?? [];
-          acc[round].push(m);
-          return acc;
-        }, {});
+        const dayMatches = [...byDay[day]].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
 
         return (
           <section className="matchday" key={day}>
             <div className="matchday__label">{formatDayLabelEAT(day)}</div>
-            {Object.entries(byRound).map(([round, roundMatches]) => (
-              <div key={round}>
-                {Object.keys(byRound).length > 1 && (
-                  <div className="matchday__sublabel">{round}</div>
-                )}
-                {roundMatches.map((match) => (
-                  <MatchRow key={match.id} match={match} />
-                ))}
-              </div>
+            {dayMatches.map((match) => (
+              <MatchRow key={match.id} match={match} />
             ))}
           </section>
         );
