@@ -10,6 +10,7 @@ export default function RefreshButton() {
 
   return (
     <button
+      type="button"
       className="refresh-btn"
       onClick={() => {
         startTransition(() => {

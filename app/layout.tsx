@@ -14,9 +14,37 @@ const inter = Inter({
   variable: "--font-body"
 });
 
+const siteUrl = "https://nations-league-matchday.vercel.app";
+const title = "Matchday — UEFA Nations League";
+const description =
+  "Live scores, fixtures, results and standings for the UEFA Nations League. Updated on match nights.";
+
 export const metadata: Metadata = {
-  title: "Matchday — UEFA Nations League",
-  description: "Fixtures, live scores, standings and results for the UEFA Nations League."
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: title,
+    template: "%s · Nations League Matchday"
+  },
+  description,
+  applicationName: "Nations League Matchday",
+  authors: [{ name: "Visualixe Foundation" }],
+  openGraph: {
+    type: "website",
+    locale: "en_GB",
+    url: siteUrl,
+    siteName: "Nations League Matchday",
+    title,
+    description,
+  },
+  twitter: {
+    card: "summary",
+    title,
+    description
+  },
+  robots: {
+    index: true,
+    follow: true
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

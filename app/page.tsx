@@ -1,22 +1,23 @@
-import { getMatchesWindow, todayEAT, type Match } from "@/lib/highlightly";
+import {
+  hasLiveMatch,
+  leaguePhaseStatus,
+  loadFixtureWindow
+} from "@/lib/fixtures";
 import { dayKeyEAT, formatDayLabelEAT } from "@/lib/time";
 import RefreshButton from "./components/RefreshButton";
 import KickoffCountdown from "./components/KickoffCountdown";
 import MatchRow from "./components/MatchRow";
+import LiveAutoRefresh from "./components/LiveAutoRefresh";
+import type { Match } from "@/lib/highlightly";
 
-// Short so live scores and FT results appear on match nights
 export const revalidate = 90;
 
 export default async function HomePage() {
-  // Use EAT calendar day so "today" matches what fans in East Africa see
-  const today = todayEAT();
   let matches: Match[] = [];
   let errorMessage: string | null = null;
 
   try {
-    // Tight window: past 2 + next 6 days ≈ 8 API calls (free tier friendly).
-    // Covers MD1–MD2 cluster without burning the daily quota.
-    matches = await getMatchesWindow(today, 6, 2);
+    matches = await loadFixtureWindow();
   } catch (err) {
     errorMessage = err instanceof Error ? err.message : "Failed to load fixtures.";
   }
@@ -34,14 +35,22 @@ export default async function HomePage() {
     .filter((m) => m.state.description.toLowerCase() === "not started")
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
 
+  const live = hasLiveMatch(matches);
+  const phase = leaguePhaseStatus();
+
   const quotaHit =
     errorMessage?.includes("429") ||
     errorMessage?.toLowerCase().includes("daily request");
 
   return (
     <div className="page wrap">
+      <LiveAutoRefresh active={live} />
+
       <div className="page__heading">
-        <h1>Fixtures & live scores</h1>
+        <div>
+          <h1>Fixtures & live scores</h1>
+          {phase && <p className="page__phase">{phase}</p>}
+        </div>
         <RefreshButton />
       </div>
 
@@ -55,9 +64,7 @@ export default async function HomePage() {
       {errorMessage && (
         <div className="empty-state">
           <strong>
-            {quotaHit
-              ? "API daily limit reached"
-              : "Couldn't load fixtures"}
+            {quotaHit ? "API daily limit reached" : "Couldn't load fixtures"}
           </strong>
           {quotaHit
             ? "Highlightly free tier is exhausted for today. Data returns after the daily reset (around 03:00 EAT)."

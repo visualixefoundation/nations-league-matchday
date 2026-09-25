@@ -1,41 +1,47 @@
 import {
-  getMatchesWindow,
-  isFinished,
-  todayEAT,
-  type Match
-} from "@/lib/highlightly";
+  finishedMatches,
+  hasLiveMatch,
+  leaguePhaseStatus,
+  loadFixtureWindow
+} from "@/lib/fixtures";
 import { dayKeyEAT, formatDayLabelEAT } from "@/lib/time";
 import MatchRow from "@/app/components/MatchRow";
+import LiveAutoRefresh from "@/app/components/LiveAutoRefresh";
 
 export const revalidate = 90;
 
 export default async function ResultsPage() {
-  const today = todayEAT();
-  let finished: Match[] = [];
+  let finished: ReturnType<typeof finishedMatches> = [];
+  let live = false;
   let errorMessage: string | null = null;
 
   try {
-    // Include today + a few past days so FT scores show the same evening
-    const window = await getMatchesWindow(today, 1, 5);
-    finished = window
-      .filter((m) => isFinished(m.state.description))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Same loader as Home — reuses cached per-day API responses
+    const window = await loadFixtureWindow();
+    finished = finishedMatches(window);
+    live = hasLiveMatch(window);
   } catch (err) {
     errorMessage = err instanceof Error ? err.message : "Failed to load results.";
   }
 
-  const byDay = finished.reduce<Record<string, Match[]>>((acc, m) => {
+  const byDay = finished.reduce<Record<string, typeof finished>>((acc, m) => {
     const key = dayKeyEAT(m.date);
     acc[key] = acc[key] ?? [];
     acc[key].push(m);
     return acc;
   }, {});
   const dayKeys = Object.keys(byDay).sort().reverse();
+  const phase = leaguePhaseStatus();
 
   return (
     <div className="page wrap">
+      <LiveAutoRefresh active={live} />
+
       <div className="page__heading">
-        <h1>Results</h1>
+        <div>
+          <h1>Results</h1>
+          {phase && <p className="page__phase">{phase}</p>}
+        </div>
       </div>
 
       <p className="page__intro">Full-time scores from recent matchdays.</p>
