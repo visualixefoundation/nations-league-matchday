@@ -52,6 +52,12 @@ a { color: inherit; text-decoration: none; }
 .page__heading h1 {
   font-family: var(--font-display); font-weight: 600; font-size: 1.9rem; margin: 0;
 }
+.page__phase {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: var(--steel);
+  letter-spacing: 0.01em;
+}
 .page__date { color: var(--steel); font-size: 0.95rem; }
 .page__intro {
   color: var(--steel);
