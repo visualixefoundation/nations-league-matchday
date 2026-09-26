@@ -1,24 +1,22 @@
 import { cache } from "react";
 import {
-  getMatchesWindow,
+  getSeasonMatches,
   isFinished,
   isLive,
   todayEAT,
   type Match
 } from "@/lib/highlightly";
 
-/** Same window for Home + Results so per-day API responses share the Data Cache. */
-export const FIXTURE_FORWARD_DAYS = 6;
-export const FIXTURE_PAST_DAYS = 2;
-
 /**
- * One shared loader for the fixture window. React cache() dedupes within a
- * request; Next fetch cache dedupes across Home/Results for the same dates.
+ * Full current-season fixture list (MD1 → end of league phase and beyond).
+ * Shared by Home + Results so both pages hit the same cached season pages.
  */
-export const loadFixtureWindow = cache(async (): Promise<Match[]> => {
-  const today = todayEAT();
-  return getMatchesWindow(today, FIXTURE_FORWARD_DAYS, FIXTURE_PAST_DAYS);
+export const loadAllMatches = cache(async (): Promise<Match[]> => {
+  return getSeasonMatches();
 });
+
+/** @deprecated Use loadAllMatches — kept name for fewer call-site churns */
+export const loadFixtureWindow = loadAllMatches;
 
 export function finishedMatches(matches: Match[]): Match[] {
   return matches

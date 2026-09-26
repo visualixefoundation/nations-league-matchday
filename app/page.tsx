@@ -1,7 +1,7 @@
 import {
   hasLiveMatch,
   leaguePhaseStatus,
-  loadFixtureWindow
+  loadAllMatches
 } from "@/lib/fixtures";
 import { dayKeyEAT, formatDayLabelEAT } from "@/lib/time";
 import RefreshButton from "./components/RefreshButton";
@@ -10,14 +10,14 @@ import MatchRow from "./components/MatchRow";
 import LiveAutoRefresh from "./components/LiveAutoRefresh";
 import type { Match } from "@/lib/highlightly";
 
-export const revalidate = 90;
+export const revalidate = 300; // 5 min — aligned with season list cache
 
 export default async function HomePage() {
   let matches: Match[] = [];
   let errorMessage: string | null = null;
 
   try {
-    matches = await loadFixtureWindow();
+    matches = await loadAllMatches();
   } catch (err) {
     errorMessage = err instanceof Error ? err.message : "Failed to load fixtures.";
   }
@@ -48,11 +48,15 @@ export default async function HomePage() {
 
       <div className="page__heading">
         <div>
-          <h1>Fixtures & live scores</h1>
+          <h1>All matches</h1>
           {phase && <p className="page__phase">{phase}</p>}
         </div>
         <RefreshButton />
       </div>
+
+      <p className="page__intro">
+        Full UEFA Nations League fixture list for this season — past results and upcoming games.
+      </p>
 
       {nextMatch && (
         <KickoffCountdown
@@ -74,8 +78,8 @@ export default async function HomePage() {
 
       {!errorMessage && matches.length === 0 && (
         <div className="empty-state">
-          <strong>No Nations League matches in this window</strong>
-          Check back around matchdays, or open Results after full-time.
+          <strong>No Nations League matches found</strong>
+          Check back once the season fixtures are published on the data feed.
         </div>
       )}
 

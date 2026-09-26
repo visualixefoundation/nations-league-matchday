@@ -2,13 +2,13 @@ import {
   finishedMatches,
   hasLiveMatch,
   leaguePhaseStatus,
-  loadFixtureWindow
+  loadAllMatches
 } from "@/lib/fixtures";
 import { dayKeyEAT, formatDayLabelEAT } from "@/lib/time";
 import MatchRow from "@/app/components/MatchRow";
 import LiveAutoRefresh from "@/app/components/LiveAutoRefresh";
 
-export const revalidate = 90;
+export const revalidate = 300;
 
 export default async function ResultsPage() {
   let finished: ReturnType<typeof finishedMatches> = [];
@@ -16,10 +16,9 @@ export default async function ResultsPage() {
   let errorMessage: string | null = null;
 
   try {
-    // Same loader as Home — reuses cached per-day API responses
-    const window = await loadFixtureWindow();
-    finished = finishedMatches(window);
-    live = hasLiveMatch(window);
+    const all = await loadAllMatches();
+    finished = finishedMatches(all);
+    live = hasLiveMatch(all);
   } catch (err) {
     errorMessage = err instanceof Error ? err.message : "Failed to load results.";
   }
@@ -44,7 +43,7 @@ export default async function ResultsPage() {
         </div>
       </div>
 
-      <p className="page__intro">Full-time scores from recent matchdays.</p>
+      <p className="page__intro">Full-time scores from this Nations League season.</p>
 
       {errorMessage && (
         <div className="empty-state">
@@ -67,7 +66,7 @@ export default async function ResultsPage() {
         </section>
       ) : (
         !errorMessage && (
-          <div className="empty-state">No finished matches in the recent window.</div>
+          <div className="empty-state">No finished matches yet this season.</div>
         )
       )}
     </div>
